@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade Ledger — Student Calculators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--board:#1F3A2E;--board-deep:#182F25;--wood:#8B5E3C;--wood-dark:#6E4A2D;--chalk:#F5F3EA;--chalk-dim:#C9D3C6;--yellow:#F2C14E;--blue:#8FC1E3;--pink:#E88DA0;--line:rgba(245,243,234,.16)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -10%,#2A4A3A 0%,transparent 60%),var(--board-deep);font-family:Inter,sans-serif;color:var(--chalk)}
+body{padding:30px 14px 70px}
+.frame{width:100%;max-width:760px;margin:auto;background:linear-gradient(180deg,var(--wood),var(--wood-dark));border-radius:18px;padding:14px;box-shadow:0 30px 60px -20px rgba(0,0,0,.55)}
+.board{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 40%),var(--board);border-radius:10px;padding:28px 26px;position:relative;overflow:hidden}
+.board:before{content:"";position:absolute;inset:0;background-image:radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,.05) 0,transparent 100%),radial-gradient(1px 1px at 70% 60%,rgba(255,255,255,.04) 0,transparent 100%);pointer-events:none}
+header{position:relative;border-bottom:1px dashed var(--line);padding-bottom:18px;margin-bottom:18px}
+h1{font-family:Caveat,cursive;font-size:2.8rem;margin:0;line-height:1;color:var(--chalk)}
+.subtitle{color:var(--chalk-dim);font-size:.85rem;margin:5px 0 0}
+.nav{position:relative;display:flex;gap:7px;overflow:auto;padding:2px 0 12px;margin-bottom:15px}
+.nav button{white-space:nowrap;border:1px solid var(--line);background:rgba(0,0,0,.18);color:var(--chalk-dim);border-radius:999px;padding:8px 13px;cursor:pointer;font-weight:600}
+.nav button.active,.nav button:hover{background:var(--yellow);color:var(--board-deep);border-color:var(--yellow)}
+.page{display:none;position:relative}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{border:1px solid var(--line);background:rgba(0,0,0,.16);border-radius:12px;padding:17px;cursor:pointer;transition:.2s}
+.card:hover{transform:translateY(-2px);border-color:var(--yellow)}
+.card .icon{font-size:1.5rem}.card h3{margin:8px 0 4px}.card p{margin:0;color:var(--chalk-dim);font-size:.78rem;line-height:1.4}
+.more-list{margin-top:16px}
+label{display:block;font-size:.78rem;color:var(--chalk-dim);margin:12px 0 6px}
+input,select{width:100%;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:7px;color:var(--chalk);padding:10px;font:inherit}
+select option{color:#111}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+button.primary{border:0;background:var(--yellow);color:var(--board-deep);font-weight:700;border-radius:8px;padding:10px 16px;cursor:pointer}
+button.secondary{border:1px dashed var(--line);background:transparent;color:var(--chalk-dim);border-radius:8px;padding:10px 16px;cursor:pointer}
+.result{margin-top:18px;border-top:1px dashed var(--line);padding-top:18px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.result-value{font-family:Caveat,cursive;font-size:2.4rem;color:var(--yellow);font-weight:700}
+.result-note{color:var(--chalk-dim);font-size:.8rem}
+table{width:100%;border-collapse:collapse;margin-top:5px}
+th{color:var(--chalk-dim);font-size:.72rem;text-align:left;padding:7px;border-bottom:1px solid var(--line)}
+td{padding:7px;border-bottom:1px solid var(--line)}
+.remove{background:none;border:0;color:var(--pink);font-size:1.2rem;cursor:pointer}
+.small{font-size:.72rem;color:var(--chalk-dim);line-height:1.5;margin-top:14px}
+.back{margin-bottom:12px;background:transparent;border:0;color:var(--blue);cursor:pointer;padding:0}
+@media(max-width:560px){.board{padding:23px 15px}.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}h1{font-size:2.35rem}}
+</style>
+</head>
+<body>
+<div class="frame"><div class="board">
+<header><h1>Grade Ledger</h1><p class="subtitle">Student calculators — GPA, health, marks and more</p></header>
+
+<nav class="nav">
+<button class="active" data-page="home">Home</button>
+<button data-page="gpa">🎓 GPA</button>
+<button data-page="bmi">❤️ BMI</button>
+<button data-page="percentage">🧮 Percentage</button>
+<button data-page="age">🎂 Age</button>
+<button data-page="more">➕ More</button>
+</nav>
+
+<section id="home" class="page active">
+<div class="grid">
+<div class="card" data-open="gpa"><div class="icon">🎓</div><h3>GPA Calculator</h3><p>Calculate weighted GPA using grade points and credit hours.</p></div>
+<div class="card" data-open="bmi"><div class="icon">❤️</div><h3>BMI Calculator</h3><p>Estimate BMI from height and weight.</p></div>
+<div class="card" data-open="percentage"><div class="icon">🧮</div><h3>Percentage Calculator</h3><p>Calculate percentage from obtained and total marks.</p></div>
+<div class="card" data-open="age"><div class="icon">🎂</div><h3>Age Calculator</h3><p>Calculate age from date of birth.</p></div>
+<div class="card" data-open="more"><div class="icon">➕</div><h3>More Calculators</h3><p>CGPA, discount, interest, BMR and unit conversion.</p></div>
+</div>
+</section>
+
+<section id="gpa" class="page">
+<button class="back" data-page="home">← Back to Home</button>
+<h2>🎓 GPA Calculator</h2>
+<table><thead><tr><th>Subject</th><th>Grade pt.</th><th>Credit hrs</th><th></th></tr></thead><tbody id="gpaRows"></tbody></table>
+<div class="actions"><button class="secondary" id="addGpa">+ Add subject</button></div>
+<div class="result"><div><div class="result-note">Overall GPA</div><div id="gpaRemark" class="result-note">Add your subjects</div></div><div class="result-value" id="gpaResult">–</div></div>
+<p class="small">Grade points are usually on a 0–4 scale. Credit hours weight each course.</p>
+</section>
+
+<section id="bmi" class="page">
+<button class="back" data-page="home">← Back to Home</button><h2>❤️ BMI Calculator</h2>
+<div class="row"><div><label>Height (cm)</label><input id="height" type="number" min="1" placeholder="170"></div><div><label>Weight (kg)</label><input id="weight" type="number" min="1" placeholder="65"></div></div>
+<div class="actions"><button class="primary" onclick="calcBMI()">Calculate BMI</button></div>
+<div class="result"><div class="result-note">Estimated BMI</div><div class="result-value" id="bmiResult">–</div></div>
+<p class="small">BMI is a general screening measure and is not a diagnosis. For people under 18, adult BMI categories should not be used; a healthcare professional can interpret growth using age- and sex-specific charts.</p>
+</section>
+
+<section id="percentage" class="page">
+<button class="back" data-page="home">← Back to Home</button><h2>🧮 Percentage Calculator</h2>
+<div class="row"><div><label>Marks obtained</label><input id="obtained" type="number" min="0" placeholder="450"></div><div><label>Total marks</label><input id="total" type="number" min="1" placeholder="550"></div></div>
+<div class="actions"><button class="primary" onclick="calcPercentage()">Calculate</button></div>
+<div class="result"><div class="result-note">Percentage</div><div class="result-value" id="pctResult">–</div></div>
+</section>
+
+<section id="age" class="page">
+<button class="back" data-page="home">← Back to Home</button><h2>🎂 Age Calculator</h2>
+<label>Date of birth</label><input id="dob" type="date">
+<div class="actions"><button class="primary" onclick="calcAge()">Calculate Age</button></div>
+<div class="result"><div class="result-note">Your age</div><div class="result-value" id="ageResult">–</div></div>
+</section>
+
+<section id="more" class="page">
+<button class="back" data-page="home">← Back to Home</button><h2>➕ More Calculators</h2>
+<div class="grid more-list">
+<div class="card" data-open="cgpa"><div class="icon">📚</div><h3>CGPA Calculator</h3><p>Average multiple semester GPAs.</p></div>
+<div class="card" data-open="bmr"><div class="icon">🔥</div><h3>BMR Calculator</h3><p>Estimate basal metabolic rate.</p></div>
+<div class="card" data-open="discount"><div class="icon">🏷️</div><h3>Discount Calculator</h3><p>Find discount amount and final price.</p></div>
+<div class="card" data-open="interest"><div class="icon">💰</div><h3>Simple Interest</h3><p>Calculate simple interest and total amount.</p></div>
+<div class="card" data-open="converter"><div class="icon">📏</div><h3>Unit Converter</h3><p>Convert common length and weight units.</p></div>
+</div>
+</section>
+
+<section id="cgpa" class="page"><button class="back" data-page="more">← Back</button><h2>📚 CGPA Calculator</h2>
+<div id="cgpaInputs"></div><div class="actions"><button class="secondary" onclick="addCgpa()">+ Add semester</button><button class="primary" onclick="calcCgpa()">Calculate</button></div>
+<div class="result"><div class="result-note">Average CGPA</div><div class="result-value" id="cgpaResult">–</div></div></section>
+
+<section id="bmr" class="page"><button class="back" data-page="more">← Back</button><h2>🔥 BMR Calculator</h2>
+<div class="row"><div><label>Age</label><input id="bmrAge" type="number"></div><div><label>Weight (kg)</label><input id="bmrWeight" type="number"></div></div>
+<div class="row"><div><label>Height (cm)</label><input id="bmrHeight" type="number"></div><div><label>Sex</label><select id="bmrSex"><option value="male">Male</option><option value="female">Female</option></select></div></div>
+<div class="actions"><button class="primary" onclick="calcBMR()">Calculate</button></div><div class="result"><div class="result-note">Estimated BMR</div><div class="result-value" id="bmrResult">–</div></div>
+<p class="small">This is an estimate for informational purposes, not a medical or nutrition prescription.</p></section>
+
+<section id="discount" class="page"><button class="back" data-page="more">← Back</button><h2>🏷️ Discount Calculator</h2>
+<div class="row"><div><label>Original price</label><input id="price" type="number"></div><div><label>Discount (%)</label><input id="discountPct" type="number"></div></div>
+<div class="actions"><button class="primary" onclick="calcDiscount()">Calculate</button></div><div class="result"><div class="result-note">Final price</div><div class="result-value" id="discountResult">–</div></div></section>
+
+<section id="interest" class="page"><button class="back" data-page="more">← Back</button><h2>💰 Simple Interest</h2>
+<div class="row"><div><label>Principal</label><input id="principal" type="number"></div><div><label>Rate (%)</label><input id="rate" type="number"></div></div>
+<label>Time (years)</label><input id="years" type="number">
+<div class="actions"><button class="primary" onclick="calcInterest()">Calculate</button></div><div class="result"><div class="result-note">Interest / Total</div><div class="result-value" id="interestResult">–</div></div></section>
+
+<section id="converter" class="page"><button class="back" data-page="more">← Back</button><h2>📏 Unit Converter</h2>
+<div class="row"><div><label>Value</label><input id="convValue" type="number" placeholder="10"></div><div><label>Conversion</label><select id="convType"><option value="m-ft">Meters → Feet</option><option value="ft-m">Feet → Meters</option><option value="kg-lb">Kilograms → Pounds</option><option value="lb-kg">Pounds → Kilograms</option><option value="km-mi">Kilometers → Miles</option><option value="mi-km">Miles → Kilometers</option></select></div></div>
+<div class="actions"><button class="primary" onclick="convert()">Convert</button></div><div class="result"><div class="result-note">Result</div><div class="result-value" id="convResult">–</div></div></section>
+
+</div></div>
+
+<script>
+const pages=[...document.querySelectorAll('.page')];
+function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.open)));
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+
+let gpaRows=[{},{}];
+function renderGpa(){document.getElementById('gpaRows').innerHTML=gpaRows.map((r,i)=>`<tr><td><input placeholder="e.g. Physics" value="${r.name||''}" oninput="gpaRows[${i}].name=this.value"></td><td><input type="number" min="0" max="4" step=".1" placeholder="4.0" value="${r.gp||''}" oninput="gpaRows[${i}].gp=this.value;calcGpa()"></td><td><input type="number" min="0" step="1" placeholder="3" value="${r.cr||''}" oninput="gpaRows[${i}].cr=this.value;calcGpa()"></td><td><button class="remove" onclick="gpaRows.splice(${i},1);renderGpa();calcGpa()">×</button></td></tr>`).join('')}
+function calcGpa(){let p=0,c=0;gpaRows.forEach(r=>{let gp=parseFloat(r.gp),cr=parseFloat(r.cr);if(!isNaN(gp)&&!isNaN(cr)&&cr>0){p+=gp*cr;c+=cr}});document.getElementById('gpaResult').textContent=c?(p/c).toFixed(2):'–';document.getElementById('gpaRemark').textContent=c?'Weighted GPA':'Add your subjects'}
+document.getElementById('addGpa').onclick=()=>{gpaRows.push({});renderGpa()};renderGpa();
+
+function calcBMI(){let h=+height.value/100,w=+weight.value;document.getElementById('bmiResult').textContent=h>0&&w>0?(w/(h*h)).toFixed(1):'–'}
+function calcPercentage(){let a=+obtained.value,b=+total.value;document.getElementById('pctResult').textContent=b>0?(a/b*100).toFixed(2)+'%':'–'}
+function calcAge(){if(!dob.value)return;let d=new Date(dob.value),n=new Date(),age=n.getFullYear()-d.getFullYear();let m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))age--;document.getElementById('ageResult').textContent=age>=0?age+' years':'–'}
+let cgpaCount=0;function addCgpa(){cgpaCount++;cgpaInputs.insertAdjacentHTML('beforeend',`<div class="row" style="margin-top:8px"><input class="cg" type="number" min="0" max="4" step=".01" placeholder="Semester GPA"><input class="cw" type="number" min="0" placeholder="Credit hours"></div>`)}
+for(let i=0;i<2;i++)addCgpa();
+function calcCgpa(){let gs=[...document.querySelectorAll('.cg')],ws=[...document.querySelectorAll('.cw')],p=0,c=0;gs.forEach((x,i)=>{let g=+x.value,w=+ws[i].value;if(g>=0&&w>0){p+=g*w;c+=w}});cgpaResult.textContent=c?(p/c).toFixed(2):'–'}
+function calcBMR(){let a=+bmrAge.value,w=+bmrWeight.value,h=+bmrHeight.value,s=bmrSex.value;if(a&&w&&h)bmrResult.textContent=Math.round(10*w+6.25*h-5*a+(s==='male'?5:-161))+' kcal/day';else bmrResult.textContent='–'}
+function calcDiscount(){let p=+price.value,d=+discountPct.value;if(p>=0&&d>=0)discountResult.textContent=(p*(1-d/100)).toFixed(2)}
+function calcInterest(){let p=+principal.value,r=+rate.value,t=+years.value;if(p>=0&&r>=0&&t>=0){let i=p*r*t/100;interestResult.textContent=i.toFixed(2)+' / '+(p+i).toFixed(2)}}
+function convert(){let v=+convValue.value,t=convType.value,m={ 'm-ft':3.28084,'ft-m':.3048,'kg-lb':2.20462,'lb-kg':.453592,'km-mi':.621371,'mi-km':1.60934};convResult.textContent=!isNaN(v)?(v*m[t]).toFixed(3):'–'}
+</script>
+</body>
+</html>
