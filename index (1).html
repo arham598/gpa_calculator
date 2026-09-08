@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade Ledger — GPA &amp; Percentage Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#1F3A2E;
+    --board-deep:#182F25;
+    --board-edge:#12241C;
+    --wood:#8B5E3C;
+    --wood-dark:#6E4A2D;
+    --chalk:#F5F3EA;
+    --chalk-dim:#C9D3C6;
+    --chalk-yellow:#F2C14E;
+    --chalk-pink:#E88DA0;
+    --chalk-blue:#8FC1E3;
+    --line: rgba(245,243,234,0.16);
+    --radius: 10px;
+  }
+
+  *{box-sizing:border-box;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  html,body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 50% -10%, #2A4A3A 0%, transparent 60%),
+      var(--board-deep);
+    font-family:'Inter',sans-serif;
+    color:var(--chalk);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 16px 80px;
+  }
+
+  .frame{
+    width:100%;
+    max-width:680px;
+    background:linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
+    border-radius:18px;
+    padding:14px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.55),
+      inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+
+  .board{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%),
+      var(--board);
+    border-radius:10px;
+    padding:34px 30px 30px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  nav.tool-nav{
+    display:flex;
+    gap:14px;
+    margin-bottom:22px;
+    font-size:0.8rem;
+    position:relative;
+  }
+  nav.tool-nav a{
+    color:var(--chalk-dim);
+    text-decoration:none;
+    padding-bottom:2px;
+    border-bottom:1px solid transparent;
+  }
+  nav.tool-nav a:hover, nav.tool-nav a:focus-visible{
+    color:var(--chalk-yellow);
+    border-bottom-color:var(--chalk-yellow);
+  }
+
+  /* faint chalk dust texture */
+  .board::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.05) 0, transparent 100%),
+      radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.04) 0, transparent 100%),
+      radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,0.05) 0, transparent 100%),
+      radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,0.04) 0, transparent 100%);
+    pointer-events:none;
+  }
+
+  header{
+    position:relative;
+    margin-bottom:22px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    border-bottom:1px dashed var(--line);
+    padding-bottom:18px;
+  }
+
+  h1{
+    font-family:'Caveat',cursive;
+    font-weight:700;
+    font-size:2.6rem;
+    margin:0;
+    color:var(--chalk);
+    letter-spacing:0.5px;
+    line-height:1;
+  }
+
+  .subtitle{
+    font-size:0.85rem;
+    color:var(--chalk-dim);
+    margin:4px 0 0;
+  }
+
+  .mode-toggle{
+    position:relative;
+    display:inline-flex;
+    background:rgba(0,0,0,0.25);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:3px;
+    gap:2px;
+  }
+
+  .mode-toggle button{
+    appearance:none;
+    border:none;
+    background:transparent;
+    color:var(--chalk-dim);
+    font-family:'Inter',sans-serif;
+    font-size:0.82rem;
+    font-weight:600;
+    padding:7px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:color 0.2s ease, background 0.2s ease;
+  }
+
+  .mode-toggle button.active{
+    background:var(--chalk-yellow);
+    color:var(--board-deep);
+  }
+
+  .mode-toggle button:focus-visible,
+  button:focus-visible,
+  input:focus-visible{
+    outline:2px solid var(--chalk-blue);
+    outline-offset:2px;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    position:relative;
+  }
+
+  thead th{
+    text-align:left;
+    font-size:0.72rem;
+    font-weight:600;
+    color:var(--chalk-dim);
+    padding:0 8px 10px;
+    border-bottom:1px solid var(--line);
+  }
+
+  th.col-narrow, td.col-narrow{ width:78px; text-align:center; }
+  th.col-remove, td.col-remove{ width:34px; text-align:center; }
+
+  tbody td{
+    padding:7px 8px;
+    border-bottom:1px solid var(--line);
+  }
+
+  input[type="text"], input[type="number"]{
+    width:100%;
+    background:rgba(0,0,0,0.22);
+    border:1px solid var(--line);
+    border-radius:7px;
+    color:var(--chalk);
+    font-family:'Inter',sans-serif;
+    font-size:0.9rem;
+    padding:9px 10px;
+    -moz-appearance:textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+  }
+
+  input::placeholder{ color:rgba(245,243,234,0.35); }
+
+  .remove-btn{
+    appearance:none;
+    background:transparent;
+    border:none;
+    color:var(--chalk-pink);
+    font-size:1.15rem;
+    line-height:1;
+    cursor:pointer;
+    padding:4px 6px;
+    border-radius:6px;
+  }
+  .remove-btn:hover{ background:rgba(232,141,160,0.14); }
+
+  .add-row{
+    margin-top:14px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:transparent;
+    border:1px dashed var(--line);
+    color:var(--chalk-dim);
+    font-family:'Inter',sans-serif;
+    font-size:0.85rem;
+    font-weight:500;
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, color 0.2s ease;
+  }
+  .add-row:hover{ border-color:var(--chalk-yellow); color:var(--chalk-yellow); }
+
+  .result-strip{
+    margin-top:28px;
+    padding-top:22px;
+    border-top:1px dashed var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+
+  .result-labels{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+
+  .result-caption{
+    font-size:0.75rem;
+    color:var(--chalk-dim);
+    text-transform:none;
+  }
+
+  .result-remark{
+    font-family:'Caveat',cursive;
+    font-size:1.4rem;
+    color:var(--chalk-blue);
+  }
+
+  .result-circle{
+    width:104px;
+    height:104px;
+    border-radius:50%;
+    border:3px solid var(--chalk-yellow);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    flex-shrink:0;
+    box-shadow: 0 0 0 4px rgba(242,193,78,0.08);
+  }
+
+  .result-value{
+    font-family:'Caveat',cursive;
+    font-weight:700;
+    font-size:2.1rem;
+    color:var(--chalk-yellow);
+    line-height:1;
+  }
+
+  .result-unit{
+    font-size:0.65rem;
+    color:var(--chalk-dim);
+    margin-top:2px;
+    letter-spacing:0.3px;
+  }
+
+  .hint{
+    font-size:0.72rem;
+    color:var(--chalk-dim);
+    margin-top:16px;
+    line-height:1.5;
+  }
+
+  @media (max-width: 520px){
+    h1{ font-size:2.1rem; }
+    .board{ padding:26px 16px 22px; }
+    thead th{ font-size:0.66rem; }
+    .result-circle{ width:88px; height:88px; }
+    .result-value{ font-size:1.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="board">
+    <nav class="tool-nav">
+      <a href="index.html">GPA Calculator</a>
+      <a href="age-calculator.html">Age Calculator</a>
+    </nav>
+    <header>
+      <div>
+        <h1>Grade Ledger</h1>
+        <p class="subtitle">Tally your subjects, get your GPA or percentage</p>
+      </div>
+      <div class="mode-toggle" role="tablist" aria-label="Calculation mode">
+        <button type="button" id="btnGpa" class="active" role="tab" aria-selected="true">GPA</button>
+        <button type="button" id="btnPct" role="tab" aria-selected="false">Percentage</button>
+      </div>
+    </header>
+
+    <table id="gradeTable">
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <button type="button" class="add-row" id="addRow">+ Add subject</button>
+
+    <div class="result-strip">
+      <div class="result-labels">
+        <span class="result-caption" id="resultCaption">Overall GPA</span>
+        <span class="result-remark" id="resultRemark">add a subject to begin</span>
+      </div>
+      <div class="result-circle">
+        <span class="result-value" id="resultValue">–</span>
+        <span class="result-unit" id="resultUnit">GPA</span>
+      </div>
+    </div>
+
+    <p class="hint" id="hintText"></p>
+  </div>
+</div>
+
+<script>
+  const state = {
+    mode: 'gpa', // 'gpa' | 'pct'
+    rows: []
+  };
+
+  let rowId = 0;
+  function newRow(){
+    rowId += 1;
+    return { id: rowId, name: '', a: '', b: '' };
+    // for gpa mode: a = grade point (0-4), b = credit hours
+    // for pct mode: a = marks obtained, b = total marks
+  }
+
+  const tableHead = document.getElementById('tableHead');
+  const tableBody = document.getElementById('tableBody');
+  const btnGpa = document.getElementById('btnGpa');
+  const btnPct = document.getElementById('btnPct');
+  const resultCaption = document.getElementById('resultCaption');
+  const resultRemark = document.getElementById('resultRemark');
+  const resultValue = document.getElementById('resultValue');
+  const resultUnit = document.getElementById('resultUnit');
+  const hintText = document.getElementById('hintText');
+
+  function headerConfig(){
+    if(state.mode === 'gpa'){
+      return {
+        cols: ['Subject','Grade pt.','Credit hrs',''],
+        aPlaceholder: '4.0',
+        bPlaceholder: '3',
+        aStep: '0.1',
+        bStep: '1',
+        hint: 'Grade point is usually 0–4 (A=4.0, B=3.0, etc.) per subject. Credit hours weight each subject — leave as 1 if your courses are equally weighted.'
+      };
+    }
+    return {
+      cols: ['Subject','Marks obtained','Total marks',''],
+      aPlaceholder: '78',
+      bPlaceholder: '100',
+      aStep: '1',
+      bStep: '1',
+      hint: 'Enter the marks you scored and the total marks for each subject. Overall percentage = total obtained ÷ total marks × 100.'
+    };
+  }
+
+  function renderHead(){
+    const cfg = headerConfig();
+    tableHead.innerHTML = `
+      <tr>
+        <th>${cfg.cols[0]}</th>
+        <th class="col-narrow">${cfg.cols[1]}</th>
+        <th class="col-narrow">${cfg.cols[2]}</th>
+        <th class="col-remove"></th>
+      </tr>`;
+    hintText.textContent = cfg.hint;
+  }
+
+  function renderBody(){
+    const cfg = headerConfig();
+    tableBody.innerHTML = '';
+    state.rows.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" placeholder="e.g. Physics" value="${escapeHtml(row.name)}" data-id="${row.id}" data-field="name"></td>
+        <td class="col-narrow"><input type="number" placeholder="${cfg.aPlaceholder}" step="${cfg.aStep}" min="0" value="${row.a}" data-id="${row.id}" data-field="a"></td>
+        <td class="col-narrow"><input type="number" placeholder="${cfg.bPlaceholder}" step="${cfg.bStep}" min="0" value="${row.b}" data-id="${row.id}" data-field="b"></td>
+        <td class="col-remove"><button type="button" class="remove-btn" data-id="${row.id}" aria-label="Remove subject">×</button></td>
+      `;
+      tableBody.appendChild(tr);
+    });
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, s => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[s]));
+  }
+
+  function calculate(){
+    if(state.mode === 'gpa'){
+      let totalPoints = 0, totalCredits = 0;
+      state.rows.forEach(r => {
+        const gp = parseFloat(r.a);
+        const cr = parseFloat(r.b);
+        if(!isNaN(gp) && !isNaN(cr) && cr > 0){
+          totalPoints += gp * cr;
+          totalCredits += cr;
+        }
+      });
+      resultCaption.textContent = 'Overall GPA';
+      resultUnit.textContent = 'GPA';
+      if(totalCredits === 0){
+        resultValue.textContent = '–';
+        resultRemark.textContent = 'add a subject to begin';
+        return;
+      }
+      const gpa = totalPoints / totalCredits;
+      resultValue.textContent = gpa.toFixed(2);
+      resultRemark.textContent = remarkForGpa(gpa);
+    } else {
+      let obtained = 0, total = 0;
+      state.rows.forEach(r => {
+        const a = parseFloat(r.a);
+        const b = parseFloat(r.b);
+        if(!isNaN(a) && !isNaN(b) && b > 0){
+          obtained += a;
+          total += b;
+        }
+      });
+      resultCaption.textContent = 'Overall Percentage';
+      resultUnit.textContent = '%';
+      if(total === 0){
+        resultValue.textContent = '–';
+        resultRemark.textContent = 'add a subject to begin';
+        return;
+      }
+      const pct = (obtained / total) * 100;
+      resultValue.textContent = pct.toFixed(1);
+      resultRemark.textContent = remarkForPct(pct);
+    }
+  }
+
+  function remarkForGpa(g){
+    if(g >= 3.7) return 'excellent standing';
+    if(g >= 3.3) return 'strong standing';
+    if(g >= 2.7) return 'solid standing';
+    if(g >= 2.0) return 'passing standing';
+    return 'needs improvement';
+  }
+  function remarkForPct(p){
+    if(p >= 90) return 'excellent score';
+    if(p >= 75) return 'very good score';
+    if(p >= 60) return 'good score';
+    if(p >= 40) return 'passing score';
+    return 'below passing';
+  }
+
+  function render(){
+    renderHead();
+    renderBody();
+    calculate();
+  }
+
+  tableBody.addEventListener('input', (e) => {
+    const id = Number(e.target.dataset.id);
+    const field = e.target.dataset.field;
+    const row = state.rows.find(r => r.id === id);
+    if(row){
+      row[field] = e.target.value;
+      calculate();
+    }
+  });
+
+  tableBody.addEventListener('click', (e) => {
+    if(e.target.classList.contains('remove-btn')){
+      const id = Number(e.target.dataset.id);
+      state.rows = state.rows.filter(r => r.id !== id);
+      renderBody();
+      calculate();
+    }
+  });
+
+  document.getElementById('addRow').addEventListener('click', () => {
+    state.rows.push(newRow());
+    renderBody();
+    calculate();
+  });
+
+  btnGpa.addEventListener('click', () => {
+    if(state.mode === 'gpa') return;
+    state.mode = 'gpa';
+    btnGpa.classList.add('active'); btnGpa.setAttribute('aria-selected','true');
+    btnPct.classList.remove('active'); btnPct.setAttribute('aria-selected','false');
+    render();
+  });
+
+  btnPct.addEventListener('click', () => {
+    if(state.mode === 'pct') return;
+    state.mode = 'pct';
+    btnPct.classList.add('active'); btnPct.setAttribute('aria-selected','true');
+    btnGpa.classList.remove('active'); btnGpa.setAttribute('aria-selected','false');
+    render();
+  });
+
+  // seed with two starter rows
+  state.rows.push(newRow());
+  state.rows.push(newRow());
+  render();
+</script>
+
+</body>
+</html>
